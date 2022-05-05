@@ -14,7 +14,7 @@ public class CameraManager: NSObject {
     
     //MARK: - Parameters
     
-    var onRecordingDone: ((URL) -> Void) = { _ in }
+    public var onRecordingDone: ((URL) -> Void) = { _ in }
     @Atomical var lastImageBuffer: CVImageBuffer?
     private var session = AVCaptureSession()
     
@@ -75,7 +75,7 @@ public class CameraManager: NSObject {
         return Float(camera.activeFormat.videoMaxZoomFactor)
     }
     
-    func setupSession() {
+    public func setupSession() {
         videoQueue.sync {
             session.beginConfiguration()
             session.sessionPreset = .hd1280x720
@@ -95,7 +95,7 @@ public class CameraManager: NSObject {
         }
     }
     
-    func setupPreviewLayer(_ layer: AVCaptureVideoPreviewLayer) {
+    public func setupPreviewLayer(_ layer: AVCaptureVideoPreviewLayer) {
         layer.session = session
     }
     
@@ -204,14 +204,15 @@ public class CameraManager: NSObject {
         setupSession()
     }
     
-    func startSession() {
+    public func startSession() {
         if !session.isRunning {
             videoQueue.sync {
                 self.session.startRunning()
             }
         }
     }
-    func stopSession() {
+    
+    public func stopSession() {
         if session.isRunning {
             videoQueue.sync {
                 self.session.stopRunning()
@@ -219,11 +220,11 @@ public class CameraManager: NSObject {
         }
     }
     
-    func startRecording() {
+    public func startRecording() {
         recorder.startRecording()
     }
     
-    func stopRecording() {
+    public func stopRecording() {
         recorder.stopRecording { [weak self] url in
             guard let self = self, let url = url else { return }
             self.onRecordingDone(url)
