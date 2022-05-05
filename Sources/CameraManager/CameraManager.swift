@@ -8,6 +8,7 @@
 import AVFoundation
 import UIKit
 
+@available(iOS 13.0, *)
 public class CameraManager: NSObject {
     
     public override init() {}
