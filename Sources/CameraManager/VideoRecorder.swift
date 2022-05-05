@@ -9,6 +9,8 @@ import AVFoundation
 
 class VideoRecorder {
     
+    public init() {}
+    
     private(set) var isWriting = false
     private var videoWriter: AVAssetWriter!
     private var videoWriterInput: AVAssetWriterInput!
