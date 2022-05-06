@@ -17,7 +17,7 @@ public class CameraManager: NSObject {
     
     public var onRecordingDone: ((URL) -> Void) = { _ in }
     @Atomical var lastImageBuffer: CVImageBuffer?
-    private var session = AVCaptureSession()
+    public var session = AVCaptureSession()
     
     var videoQueue = DispatchQueue(label: "videoQueue",
                                    qos: .userInitiated,
@@ -29,17 +29,17 @@ public class CameraManager: NSObject {
                                         attributes: [],
                                         autoreleaseFrequency: .workItem)
     
-    private let videoOutput = AVCaptureVideoDataOutput()
-    private let audioOutput = AVCaptureAudioDataOutput()
-    private var activeInput: AVCaptureDeviceInput?
-    private var recorder = VideoRecorder()
-    private var currentDevicePosition = AVCaptureDevice.Position.front
+    public let videoOutput = AVCaptureVideoDataOutput()
+    public let audioOutput = AVCaptureAudioDataOutput()
+    public var activeInput: AVCaptureDeviceInput?
+    var recorder = VideoRecorder()
+    public var currentDevicePosition = AVCaptureDevice.Position.front
     var isFrontCamera: Bool {
         return currentDevicePosition == .front
     }
     private var currentVideoOrientation = AVCaptureVideoOrientation.portrait
 
-    private var sessionTorchMode = AVCaptureDevice.TorchMode.off {
+    public var sessionTorchMode = AVCaptureDevice.TorchMode.off {
         didSet {
             if let input = self.activeInput {
                 let device = input.device
