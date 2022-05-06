@@ -34,10 +34,10 @@ public class CameraManager: NSObject {
     public var activeInput: AVCaptureDeviceInput?
     var recorder = VideoRecorder()
     public var currentDevicePosition = AVCaptureDevice.Position.front
-    var isFrontCamera: Bool {
+    public var isFrontCamera: Bool {
         return currentDevicePosition == .front
     }
-    private var currentVideoOrientation = AVCaptureVideoOrientation.portrait
+    public var currentVideoOrientation = AVCaptureVideoOrientation.portrait
 
     public var sessionTorchMode = AVCaptureDevice.TorchMode.off {
         didSet {
@@ -58,7 +58,7 @@ public class CameraManager: NSObject {
         }
     }
     
-    var torchMode: AVCaptureDevice.TorchMode {
+    public var torchMode: AVCaptureDevice.TorchMode {
         get {
             return sessionTorchMode
         }
@@ -67,7 +67,7 @@ public class CameraManager: NSObject {
         }
     }
     
-    var currentZoomFactor: Float {
+    public var currentZoomFactor: Float {
         return Float(activeInput?.device.videoZoomFactor ?? CGFloat(1.0))
     }
     
@@ -100,12 +100,12 @@ public class CameraManager: NSObject {
         layer.session = session
     }
     
-    func ensureMirroring() {
+    public func ensureMirroring() {
         videoOutput.connection(with: .video)?.isVideoMirrored = currentDevicePosition == .front
     }
     
     #warning("Unused Zoom")
-    func setZoomFactor(factor: Float) {
+    public func setZoomFactor(factor: Float) {
         guard let camera = activeInput?.device else { return }
         let correctedZoomFactor = max(1.0, min(factor, maxZoomFactor))
         
@@ -119,7 +119,7 @@ public class CameraManager: NSObject {
     }
     
     #warning("Unused")
-    private func focus(point: CGPoint) {
+    public func focus(point: CGPoint) {
         var convertedPoint: CGPoint? = nil
         let screenSize = UIScreen.main.bounds.size
         if point != .zero {
@@ -163,11 +163,11 @@ public class CameraManager: NSObject {
     }
     
     #warning("Unused Focus")
-    func handleFocusTap(point: CGPoint) {
+    public func handleFocusTap(point: CGPoint) {
         focus(point: point)
     }
     
-    private func setupAutofocus() {
+    public func setupAutofocus() {
         guard let camera = activeInput?.device else { return }
         do {
             try camera.lockForConfiguration()
@@ -196,7 +196,7 @@ public class CameraManager: NSObject {
     }
     
     #warning("Unused Flip")
-    func flipDevice() {
+    public func flipDevice() {
         if currentDevicePosition == .back {
             currentDevicePosition = .front
         } else {
@@ -232,7 +232,7 @@ public class CameraManager: NSObject {
         }
     }
     
-    private func setupAutofocusIfPossible() {
+    public func setupAutofocusIfPossible() {
         if let input = self.activeInput {
             let device = input.device
             if device.isSmoothAutoFocusSupported {
@@ -247,21 +247,21 @@ public class CameraManager: NSObject {
         }
     }
     
-    private func setupVideoOrientationIfPossible() {
+    public func setupVideoOrientationIfPossible() {
         let connection = self.videoOutput.connection(with: .video)
         if connection?.isVideoOrientationSupported ?? false {
             connection?.videoOrientation = self.currentVideoOrientation
         }
     }
     
-    private func setupAudioOutput() {
+    public func setupAudioOutput() {
         audioOutput.setSampleBufferDelegate(self, queue: dataOutputQueue)
         if session.canAddOutput(audioOutput) {
             session.addOutput(audioOutput)
         }
     }
     
-    private func setupAudioInput() {
+    public func setupAudioInput() {
         guard let mic = AVCaptureDevice.default(for: .audio) else { return }
         do {
             let micInput = try AVCaptureDeviceInput(device: mic)
@@ -273,7 +273,7 @@ public class CameraManager: NSObject {
         }
     }
     
-    private func setupVideoOutput() {
+    public func setupVideoOutput() {
         videoOutput.videoSettings = [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
         ]
@@ -285,7 +285,7 @@ public class CameraManager: NSObject {
         }
     }
     
-    private func setupVideoInput(position: AVCaptureDevice.Position) {
+    public func setupVideoInput(position: AVCaptureDevice.Position) {
         guard let camera = captureDevice(with: position) else { return }
         do {
             let input = try AVCaptureDeviceInput(device: camera)
@@ -332,7 +332,7 @@ public class CameraManager: NSObject {
         }
     }
     
-    private func captureDevice(with position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+    public func captureDevice(with position: AVCaptureDevice.Position) -> AVCaptureDevice? {
         currentDevicePosition = position
         var deviceTypes: [AVCaptureDevice.DeviceType] = [AVCaptureDevice.DeviceType.builtInWideAngleCamera]
         deviceTypes.append(.builtInDualCamera)

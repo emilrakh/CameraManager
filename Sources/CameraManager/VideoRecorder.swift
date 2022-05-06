@@ -7,20 +7,20 @@
 
 import AVFoundation
 
-class VideoRecorder {
+public class VideoRecorder {
     
     public init() {}
     
     private(set) var isWriting = false
-    private var videoWriter: AVAssetWriter!
-    private var videoWriterInput: AVAssetWriterInput!
-    private var audioWriterInput: AVAssetWriterInput!
-    private var sessionAtSourceTime: CMTime?
-    private var pixelAdaptor: AVAssetWriterInputPixelBufferAdaptor!
-    private let recordingQueue = DispatchQueue(label: "recording")
+    public var videoWriter: AVAssetWriter!
+    public var videoWriterInput: AVAssetWriterInput!
+    public var audioWriterInput: AVAssetWriterInput!
+    public var sessionAtSourceTime: CMTime?
+    public var pixelAdaptor: AVAssetWriterInputPixelBufferAdaptor!
+    public let recordingQueue = DispatchQueue(label: "recording")
     typealias VideoRecorderCompletion = (URL?) -> Void
 
-    func startRecording() {
+    public func startRecording() {
         recordingQueue.async {
             self.reset()
             
@@ -71,7 +71,7 @@ class VideoRecorder {
         }
     }
 
-    func appendBuffer(_ sampleBuffer: CMSampleBuffer, mediaType: AVMediaType) {
+    public func appendBuffer(_ sampleBuffer: CMSampleBuffer, mediaType: AVMediaType) {
         recordingQueue.async {
             guard self.isWriting else { return }
             
@@ -108,7 +108,7 @@ class VideoRecorder {
         }
     }
     
-    private func reset() {
+    public func reset() {
         sessionAtSourceTime = nil
         isWriting = false
     }
