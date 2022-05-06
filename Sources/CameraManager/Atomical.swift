@@ -8,15 +8,15 @@
 import Foundation
 
 @propertyWrapper
-struct Atomical<Value> {
+public struct Atomical<Value> {
     private let queue = DispatchQueue(label: "atomicalQueue")
     private var value: Value
 
-    init(wrappedValue: Value) {
+    public init(wrappedValue: Value) {
         self.value = wrappedValue
     }
     
-    var wrappedValue: Value {
+    public var wrappedValue: Value {
         get {
             return queue.sync { value }
         }
