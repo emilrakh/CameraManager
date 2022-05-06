@@ -16,7 +16,7 @@ public class CameraManager: NSObject {
     //MARK: - Parameters
     
     public var onRecordingDone: ((URL) -> Void) = { _ in }
-    @Atomical var lastImageBuffer: CVImageBuffer?
+    @Atomical public var lastImageBuffer: CVImageBuffer?
     public var session = AVCaptureSession()
     
     var videoQueue = DispatchQueue(label: "videoQueue",
