@@ -79,8 +79,7 @@ public class CameraManager: NSObject {
     public func setupSession() {
         videoQueue.sync {
             session.beginConfiguration()
-//            session.sessionPreset = .hd1280x720
-            session.sessionPreset = .high
+            session.sessionPreset = .hd1280x720
             session.automaticallyConfiguresApplicationAudioSession = false
             
             setupVideoInput(position: currentDevicePosition)
