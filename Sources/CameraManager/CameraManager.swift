@@ -79,7 +79,8 @@ public class CameraManager: NSObject {
     public func setupSession() {
         videoQueue.sync {
             session.beginConfiguration()
-            session.sessionPreset = .hd1280x720
+//            session.sessionPreset = .hd1280x720
+            session.sessionPreset = .high
             session.automaticallyConfiguresApplicationAudioSession = false
             
             setupVideoInput(position: currentDevicePosition)
@@ -118,8 +119,8 @@ public class CameraManager: NSObject {
         }
     }
     
-    #warning("Unused")
-    public func focus(point: CGPoint) {
+    #warning("Unused Focus")
+    public func handleFocusTap(point: CGPoint) {
         var convertedPoint: CGPoint? = nil
         let screenSize = UIScreen.main.bounds.size
         if point != .zero {
@@ -160,11 +161,6 @@ public class CameraManager: NSObject {
         } catch {
             print("Failed to configure focus")
         }
-    }
-    
-    #warning("Unused Focus")
-    public func handleFocusTap(point: CGPoint) {
-        focus(point: point)
     }
     
     public func setupAutofocus() {
