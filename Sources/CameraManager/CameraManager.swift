@@ -100,6 +100,84 @@ public class CameraManager: NSObject {
         layer.session = session
     }
     
+    public func setupAudioOutput() {
+        audioOutput.setSampleBufferDelegate(self, queue: dataOutputQueue)
+        if session.canAddOutput(audioOutput) {
+            session.addOutput(audioOutput)
+        }
+    }
+    
+    public func setupAudioInput() {
+        guard let mic = AVCaptureDevice.default(for: .audio) else { return }
+        do {
+            let micInput = try AVCaptureDeviceInput(device: mic)
+            if session.canAddInput(micInput) {
+                session.addInput(micInput)
+            }
+        } catch {
+            print("Error setting device audio input: \(error)")
+        }
+    }
+    
+    public func setupVideoOutput() {
+        videoOutput.videoSettings = [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+        ]
+        videoOutput.alwaysDiscardsLateVideoFrames = true
+        videoOutput.setSampleBufferDelegate(self, queue: dataOutputQueue)
+        
+        if session.canAddOutput(videoOutput) {
+            session.addOutput(videoOutput)
+        }
+    }
+    
+    public func setupVideoInput(position: AVCaptureDevice.Position) {
+        guard let camera = captureDevice(with: position) else { return }
+        do {
+            let input = try AVCaptureDeviceInput(device: camera)
+            for input in session.inputs {
+                for port in input.ports {
+                    if port.mediaType == .video {
+                        session.removeInput(input)
+                        break
+                    }
+                }
+            }
+            if session.canAddInput(input) {
+                session.addInput(input)
+                activeInput = input
+                
+                do {
+                    try input.device.lockForConfiguration()
+                    
+                    if input.device.isFocusModeSupported(.continuousAutoFocus) {
+                        input.device.focusMode = .continuousAutoFocus
+                    } else if input.device.isFocusModeSupported(.autoFocus) {
+                        input.device.focusMode = .autoFocus
+                    }
+                    
+                    if input.device.isExposureModeSupported(.continuousAutoExposure) {
+                        input.device.exposureMode = .continuousAutoExposure
+                    } else if input.device.isExposureModeSupported(.autoExpose) {
+                        input.device.exposureMode = .autoExpose
+                    }
+                    
+                    if input.device.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) {
+                        input.device.whiteBalanceMode = .continuousAutoWhiteBalance
+                    } else if input.device.isWhiteBalanceModeSupported(.autoWhiteBalance) {
+                        input.device.whiteBalanceMode = .autoWhiteBalance
+                    }
+                    
+                    input.device.unlockForConfiguration()
+                } catch {
+                    print("cant setup autofocus")
+                }
+            }
+        } catch {
+            print("Error setting device video input: \(error)")
+        }
+    }
+    
     public func ensureMirroring() {
         videoOutput.connection(with: .video)?.isVideoMirrored = currentDevicePosition == .front
     }
@@ -190,6 +268,28 @@ public class CameraManager: NSObject {
         }
     }
     
+    public func setupAutofocusIfPossible() {
+        if let input = self.activeInput {
+            let device = input.device
+            if device.isSmoothAutoFocusSupported {
+                do {
+                    try device.lockForConfiguration()
+                    device.isSmoothAutoFocusEnabled = true
+                    device.unlockForConfiguration()
+                } catch {
+                    print("Error setting configuration: \(error)")
+                }
+            }
+        }
+    }
+    
+    public func setupVideoOrientationIfPossible() {
+        let connection = self.videoOutput.connection(with: .video)
+        if connection?.isVideoOrientationSupported ?? false {
+            connection?.videoOrientation = self.currentVideoOrientation
+        }
+    }
+    
     #warning("Unused Flip")
     public func flipDevice() {
         if currentDevicePosition == .back {
@@ -224,106 +324,6 @@ public class CameraManager: NSObject {
         recorder.stopRecording { [weak self] url in
             guard let self = self, let url = url else { return }
             self.onRecordingDone(url)
-        }
-    }
-    
-    public func setupAutofocusIfPossible() {
-        if let input = self.activeInput {
-            let device = input.device
-            if device.isSmoothAutoFocusSupported {
-                do {
-                    try device.lockForConfiguration()
-                    device.isSmoothAutoFocusEnabled = true
-                    device.unlockForConfiguration()
-                } catch {
-                    print("Error setting configuration: \(error)")
-                }
-            }
-        }
-    }
-    
-    public func setupVideoOrientationIfPossible() {
-        let connection = self.videoOutput.connection(with: .video)
-        if connection?.isVideoOrientationSupported ?? false {
-            connection?.videoOrientation = self.currentVideoOrientation
-        }
-    }
-    
-    public func setupAudioOutput() {
-        audioOutput.setSampleBufferDelegate(self, queue: dataOutputQueue)
-        if session.canAddOutput(audioOutput) {
-            session.addOutput(audioOutput)
-        }
-    }
-    
-    public func setupAudioInput() {
-        guard let mic = AVCaptureDevice.default(for: .audio) else { return }
-        do {
-            let micInput = try AVCaptureDeviceInput(device: mic)
-            if session.canAddInput(micInput) {
-                session.addInput(micInput)
-            }
-        } catch {
-            print("Error setting device audio input: \(error)")
-        }
-    }
-    
-    public func setupVideoOutput() {
-        videoOutput.videoSettings = [
-            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
-        ]
-        videoOutput.alwaysDiscardsLateVideoFrames = true
-        videoOutput.setSampleBufferDelegate(self, queue: dataOutputQueue)
-        
-        if session.canAddOutput(videoOutput) {
-            session.addOutput(videoOutput)
-        }
-    }
-    
-    public func setupVideoInput(position: AVCaptureDevice.Position) {
-        guard let camera = captureDevice(with: position) else { return }
-        do {
-            let input = try AVCaptureDeviceInput(device: camera)
-            for input in session.inputs {
-                for port in input.ports {
-                    if port.mediaType == .video {
-                        session.removeInput(input)
-                        break
-                    }
-                }
-            }
-            if session.canAddInput(input) {
-                session.addInput(input)
-                activeInput = input
-                
-                do {
-                    try input.device.lockForConfiguration()
-                    
-                    if input.device.isFocusModeSupported(.continuousAutoFocus) {
-                        input.device.focusMode = .continuousAutoFocus
-                    } else if input.device.isFocusModeSupported(.autoFocus) {
-                        input.device.focusMode = .autoFocus
-                    }
-                    
-                    if input.device.isExposureModeSupported(.continuousAutoExposure) {
-                        input.device.exposureMode = .continuousAutoExposure
-                    } else if input.device.isExposureModeSupported(.autoExpose) {
-                        input.device.exposureMode = .autoExpose
-                    }
-                    
-                    if input.device.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) {
-                        input.device.whiteBalanceMode = .continuousAutoWhiteBalance
-                    } else if input.device.isWhiteBalanceModeSupported(.autoWhiteBalance) {
-                        input.device.whiteBalanceMode = .autoWhiteBalance
-                    }
-                    
-                    input.device.unlockForConfiguration()
-                } catch {
-                    print("cant setup autofocus")
-                }
-            }
-        } catch {
-            print("Error setting device video input: \(error)")
         }
     }
     
